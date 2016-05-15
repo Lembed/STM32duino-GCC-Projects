@@ -38,6 +38,12 @@ ASSERT(ORIGIN(FLASH) == ALIGN(ORIGIN(FLASH), 0x80), "Start of memory region flas
 
 SECTIONS
 {
+    /* ARM.exidx is sorted, so has to go in its own output sections */
+    .ARM.exidx : {
+      __exidx_start = .;
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+      __exidx_end = .;
+    } >FLASH
 
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
@@ -56,6 +62,7 @@ SECTIONS
         /* This is used by the startup in order to initialize the .data secion */
         _sidata = _etext;
     } >FLASH
+
 
 
     /* This is the initialized data section

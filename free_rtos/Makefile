@@ -1,5 +1,3 @@
-# Hey Emacs, this is a -*- makefile -*-
-#
 # WinARM template makefile 
 # by Martin Thomas, Kaiserslautern, Germany 
 # <eversmith(at)heizung-thomas(dot)de>
@@ -8,104 +6,26 @@
 # Please read the make user manual!
 #
 # The user-configuration is based on the WinAVR makefile-template
-# written by Eric B. Weddington, Jörg Wunsch, et al. but internal
+# written by Eric B. Weddington, JÃ¶rg Wunsch, et al. but internal
 # handling used here is very different.
 # This makefile can also be used with the GNU tools included in
 # Yagarto, GNUARM or the codesourcery packages. It should work
 # on Unix/Linux-Systems too. Just a rather up-to-date GNU make is
 # needed.
 #
-#
-# On command line:
-#
-# make all = Make software.
-#
-# make clean = Clean out built project files.
-#
-# make program = Upload load-image to the device
-#
-# make filename.s = Just compile filename.c into the assembler code only
-#
-# make filename.o = Create object filename.o from filename.c (using CFLAGS)
-#
-# To rebuild project do "make clean" then "make all".
-#
-# Changelog:
-# - 17. Feb. 2005  - added thumb-interwork support (mth)
-# - 28. Apr. 2005  - added C++ support (mth)
-# - 29. Arp. 2005  - changed handling for lst-Filename (mth)
-# -  1. Nov. 2005  - exception-vector placement options (mth)
-# - 15. Nov. 2005  - added library-search-path (EXTRA_LIB...) (mth)
-# -  2. Dec. 2005  - fixed ihex and binary file extensions (mth)
-# - 22. Feb. 2006  - added AT91LIBNOWARN setting (mth)
-# - 19. Apr. 2006  - option FLASH_TOOL (mth)
-# - 23. Jun. 2006  - option USE_THUMB_MODE -> THUMB/THUMB_IW
-# -  3. Aug. 2006  - added -ffunction-sections -fdata-sections to CFLAGS
-#                    and --gc-sections to LDFLAGS. Only available for gcc 4 (mth)
-#                    (needs appropriate linker-script, remove them when using a
-#                    "simple" linker-script)
-# -  4. Aug. 2006  - pass SUBMDL-define to frontend (mth)
-# - 11. Nov. 2006  - FLASH_TOOL-config, TCHAIN-config (mth)
-# - 28. Mar. 2007  - remove .dep-Directory with rm -r -f and force "no error" (mth)
-# - 24. Apr. 2007  - added "both" option for format (.bin and .hex) (mth)
-# - 20. Aug. 2007  - extraincdirs in asflags, passing a "board"-define (mth)
-# - 13. Sep. 2007  - create assembler from c-sources fixed (make foo.s for foo.c) (mth)
-#                  - IMGEXT no longer used and removed (mth)
-#                  - moved some entries (mth)
-# - 25. Oct. 2007  - reverted 20070328-change (b/o "race condition" with 
-#                    make clean all or when called from Eclipse) (mth)
-#                  - removed "for flash" from objdump message-string (mth)
-#                  - added same remarks (mth)
-# - 30. Oct. 2007  - Support for an output-directory with all files 
-#                    created during "make all". (mth)
-#                  - modified targets which creates assembler (lower-case s) 
-#                    from C-source using make <.c-file w/o ext.>.s (mth)
-#                  - removed redundant/unused defines, overall cleanup (mth)
-# - 10. Nov. 2007  - renamed TCHAIN to TCHAIN_PREFIX, other minor cleanup (mth)
-# - 13. Mar. 2008  - renamed FORMAT to LOADFORMAT, edited some comments/messages (mth)
-# - 13. Apr. 2009  - OpenOCD options for batch-programming (make program) (mth)
-# -  1. May  2009  - replaced SUBMDL with CHIP (mth)
-# - 15. Jul. 2009  - ComSpec environment-variable to select host-OS, should 
-#                    increase compatiblity, only tested with WinXP, cs-(GNU)-make 3.81 (mth)
-# -  1. Sep. 2009  - rename ROM_RUN->FLASH_RUN, VECT_TAB_ROM->VECT_TAB_FLASH (mth)
-# -  7. Sep. 2009  - modified directory creation ("md", related to change 20090615) (mth)
+# MD:
+# - removed unused stuff to simplify maintnance 
 
-##
-## Special Version to be used with CS G++ lite (cs-make/cs-rm, no other 
-## Shell-Tools needed). Tested with Win XP and Sourcery G++ Lite 2009q1-161.
-## M. Thomas 9/2009
-##
-
-# Toolchain prefix (i.e arm-elf- -> arm-elf-gcc.exe)
-#TCHAIN_PREFIX = arm-eabi-
-# TCHAIN_PREFIX = arm-softfloat-elf-
 TCHAIN_PREFIX = arm-none-eabi-
-REMOVE_CMD=rm
-
-FLASH_TOOL = OPENOCD
-#FLASH_TOOL = LPC21ISP
-#FLASH_TOOL = UVISION
-
-# YES enables -mthumb option to flags for source-files listed 
-# in SRC and CPPSRC and -mthumb-interwork option for all source
-USE_THUMB_MODE = YES
-#USE_THUMB_MODE = NO
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
 # - SUBMDL used for linker-script name (-T) and passed as define
-# - BOARD just passed as define (optional)
 MCU      = cortex-m3
-#CHIP     = STM32F103VB
-#BOARD    = EK_STM32F
-#F_XTAL   = 16000000
-#SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
-CHIP     = STM32F103T6U6
-CLASS    = STM32F10X_LD
-F_XTAL   = 16000000
-RAMSIZE  = 0x2800
+CHIP     = STM32F103VB
+F_XTAL   = 8000000
+RAMSIZE  = 0x5000
 SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
-
 
 # *** This example only supports "FLASH_RUN" ***
 # RUN_MODE is passed as define and used for the linker-script filename,
@@ -126,44 +46,83 @@ VECTOR_TABLE_LOCATION=VECT_TAB_FLASH
 OUTDIR = $(RUN_MODE)
 
 # Target file name (without extension).
-TARGET = stm32_blink_rtc
+TARGET = stm32_free_rtos
 
 # Pathes to libraries
 APPLIBDIR = ../lib
+RTOSDIR = $(APPLIBDIR)/FreeRTOS
+RTOSSRCDIR = $(RTOSDIR)
+RTOS_PORT = GCC/ARM_CM3
+RTOSINCDIR = $(RTOSDIR)/portable/$(RTOS_PORT) $(RTOSDIR)/include 
+RTOSPORTSRCDIR = $(RTOSDIR)/portable/$(RTOS_PORT)
+RTOSMEMSRCDIR = $(RTOSDIR)/portable/MemMang
 STMLIBDIR = $(APPLIBDIR)
 STMSPDDIR = $(STMLIBDIR)/STM32F10x_StdPeriph_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
+STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
+STMUSBSRCDIR = $(STMUSBDIR)/src
+STMUSBINCDIR = $(STMUSBDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
-FATSDDIR  = $(APPLIBDIR)/fat_sd
-MININIDIR = $(APPLIBDIR)/minIni
+MEMSDIR = $(APPLIBDIR)/MEMS
 STMEEEMULDIR = $(APPLIBDIR)/EEPROMEmulation_AN
 STMEEEMULSRCDIR = $(STMEEEMULDIR)/source
 STMEEEMULINCDIR = $(STMEEEMULDIR)/include
+SRCDIR = src
+INCLUDEDIR = inc
+SCRIPTDIR = scripts
+LINKSCIPTDIR = linkscript
+
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
-## Demo-Application:
-SRC = main.c rtc.c
+
+## Application:
+SRC = $(SRCDIR)/fault_handlers.c main.c $(SRCDIR)/rtc_bkp.c $(SRCDIR)/spi.c \
+$(SRCDIR)/adc.c $(SRCDIR)/lcd.c $(SRCDIR)/input.c $(SRCDIR)/menu.c $(SRCDIR)/i2c.c \
+$(SRCDIR)/lisXXX.c $(SRCDIR)/ADIS1625x.c $(SRCDIR)/timertest.c $(SRCDIR)/mems.c
+
 ## compiler-specific sources
-SRC += startup_stm32f10x.c
-## ITB CompuPhase's minIni
-#SRC += $(MININIDIR)/minIni.c
+SRC += $(SRCDIR)/startup_stm32f10x.c
+
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
 SRC += $(CMSISDIR)/system_stm32f10x.c
+
 ## used parts of the STM-Library
 #SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
 #SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
 SRC += $(STMSPDSRCDIR)/misc.c
+
+# FreeRTOS-specific stuff
+#SRC += $(RTOSSRCDIR)/croutine.c
+SRC += $(RTOSSRCDIR)/list.c
+SRC += $(RTOSSRCDIR)/queue.c
+SRC += $(RTOSSRCDIR)/tasks.c
+SRC += $(RTOSPORTSRCDIR)/port.c
+SRC += $(RTOSMEMSRCDIR)/heap_2.c
+SRC += $(RTOSMEMSRCDIR)/alloc.c
+
+# mems testing
+SRC += $(MEMSDIR)/mems_math.c
+SRC += $(MEMSDIR)/mems_quaternion.c
+SRC += $(MEMSDIR)/mems_vector.c
+SRC += $(MEMSDIR)/mems_matrix.c
+SRC += $(MEMSDIR)/mems_accel.c
+SRC += $(MEMSDIR)/mems_gyro.c
+SRC += $(MEMSDIR)/mems_norm.c
+SRC += $(MEMSDIR)/mems_pos.c
+SRC += $(MEMSDIR)/mems_kalman.c
+
 ## EEprom Emulation AppNote Code
 #SRC += $(STMEEEMULSRCDIR)/eeprom.c
 
@@ -179,7 +138,6 @@ CPPSRC =
 
 # List C++ source files here which must be compiled in ARM-Mode.
 # use file-extension .cpp for C++-files (not .C)
-#CPPSRCARM = $(TARGET).cpp
 CPPSRCARM = 
 
 # List Assembler source files here.
@@ -196,13 +154,17 @@ ASRCARM =
 
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
-EXTRAINCDIRS  = $(STMSPDINCDIR) $(CMSISDIR) $(FATSDDIR) $(MININIDIR) $(STMEEEMULINCDIR)
+EXTRAINCDIRS  = $(STMSPDINCDIR) $(CMSISDIR)
+EXTRAINCDIRS  += $(RTOSINCDIR)
+EXTRAINCDIRS  += $(MEMSDIR)
+#EXTRAINCDIRS  += $(STMEEEMULINCDIR)
+EXTRAINCDIRS  += $(INCLUDEDIR)
 
 # List any extra directories to look for library files here.
 # Also add directories where the linker should search for
 # includes from linker-script to the list
 #     Each directory must be seperated by a space.
-EXTRA_LIBDIRS = 
+EXTRA_LIBDIRS =
 
 # Extra libraries
 #    Each library-name must be seperated by a space.
@@ -213,7 +175,7 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = .
+LINKERSCRIPTPATH = $(LINKSCIPTDIR)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
@@ -228,20 +190,19 @@ OPT = s
 #  ihex to create a load-image in Intel hex format i.e. for lpc21isp
 #LOADFORMAT = ihex
 #LOADFORMAT = binary
-LOADFORMAT = both
+#LOADFORMAT = both
 
 # Debugging format.
-#DEBUG = stabs
 DEBUG = dwarf-2
 
 # Place project-specific -D (define) and/or 
 # -U options for C here.
 CDEFS = -DSTM32F10X_MD
+CDEFS += -DRAMSIZE=$(RAMSIZE)
 CDEFS += -DHSE_VALUE=$(F_XTAL)UL
 CDEFS += -D$(SYSCLOCK_CL)
 CDEFS += -DUSE_STDPERIPH_DRIVER
-CDEFS += -DUSE_$(BOARD)
-CDEFS += -DSTM32_SD_USE_DMA
+#CDEFS += -DSTM32_SD_USE_DMA
 CDEFS += -DSTARTUP_DELAY
 # enable modifications in STM's libraries
 CDEFS += -DMOD_MTHOMAS_STMLIB
@@ -252,7 +213,6 @@ CDEFS += -DMOD_MTHOMAS_STMLIB
 
 # Place project-specific -D and/or -U options for 
 # Assembler with preprocessor here.
-#ADEFS = -DUSE_IRQ_ASM_WRAPPER
 ADEFS = -D__ASSEMBLY__
 
 # Compiler flag to set the C Standard level.
@@ -269,20 +229,14 @@ CDEFS += -D$(VECTOR_TABLE_LOCATION)
 ADEFS += -D$(VECTOR_TABLE_LOCATION)
 endif
 
-CDEFS += -D$(RUN_MODE) -D$(CHIP)
+#CDEFS += -D$(RUN_MODE) -D$(CHIP)
+CDEFS += -D$(RUN_MODE)
 ADEFS += -D$(RUN_MODE) -D$(CHIP)
+
+THUMB    = -mthumb
 
 
 # Compiler flags.
-
-ifeq ($(USE_THUMB_MODE),YES)
-THUMB    = -mthumb
-### no for CM3 THUMB_IW = -mthumb-interwork
-else 
-THUMB    = 
-THUMB_IW = 
-endif
-
 #  -g*:          generate debugging information
 #  -O*:          optimization level
 #  -f...:        tuning, see GCC manual and avr-libc documentation
@@ -293,7 +247,7 @@ endif
 # Flags for C and C++ (arm-elf-gcc/arm-elf-g++)
 CFLAGS =  -g$(DEBUG)
 #CFLAGS += -O$(OPT)
-CFLAGS += -mcpu=$(MCU) $(THUMB_IW) 
+CFLAGS += -mcpu=$(MCU) $(THUMB_IW) -msoft-float 
 CFLAGS += $(CDEFS)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 # when using ".ramfunc"s without longcall:
@@ -312,22 +266,16 @@ CFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basen
 # Compiler flags to generate dependency files:
 CFLAGS += -MD -MP -MF $(OUTDIR)/dep/$(@F).d
 
+# CFLAGS += -funwind-tables
+# CFLAGS += -fexceptions
+
 # flags only for C
 CONLYFLAGS += -Wnested-externs 
 CONLYFLAGS += $(CSTANDARD)
 
-ifeq ($(AT91LIBNOWARN),yes)
-# compiling the AT91-lib thows warnings with the followins settings
-# so they are enabled only if AT91LIBNOWARN is set to "no"
-CFLAGS += -Wno-cast-qual
-CONLYFLAGS += -Wno-missing-prototypes 
-CONLYFLAGS += -Wno-strict-prototypes
-CONLYFLAGS += -Wno-missing-declarations
-endif
-
 # flags only for C++ (arm-elf-g++)
 CPPFLAGS = -fno-rtti -fno-exceptions
-CPPFLAGS = 
+# CPPFLAGS = -fexceptions -finwind-tables
 
 # Assembler flags.
 #  -Wa,...:    tell GCC to pass this to the assembler.
@@ -360,6 +308,7 @@ LDFLAGS += -lc -lgcc
 ifeq ($(RUN_MODE),RAM_RUN)
 LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_ram.ld
 else 
+#LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_freertos_flash.ld
 LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_flash.ld
 endif
 
@@ -413,15 +362,14 @@ LSTFILES   = $(addprefix $(OUTDIR)/, $(addsuffix .lst, $(ALLSRCBASE)))
 # Define all depedency-files (used for make clean).
 DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
+# Default target.
+all: begin gccversion build sizeafter finished end
+
 elf: $(OUTDIR)/$(TARGET).elf
 lss: $(OUTDIR)/$(TARGET).lss 
 sym: $(OUTDIR)/$(TARGET).sym
 hex: $(OUTDIR)/$(TARGET).hex
 bin: $(OUTDIR)/$(TARGET).bin
-
-# Default target.
-#all: begin gccversion sizebefore build sizeafter finished end
-all: begin gccversion build sizeafter finished end
 
 ifeq ($(LOADFORMAT),ihex)
 build: elf hex lss sym
@@ -432,7 +380,7 @@ else
 ifeq ($(LOADFORMAT),both)
 build: elf hex bin lss sym
 else 
-$(error "$(MSG_FORMATERROR) $(FORMAT)")
+build: elf lss sym
 endif
 endif
 endif
@@ -451,13 +399,9 @@ end:
 ##	@echo
 
 # Display sizes of sections.
-ELFSIZE = $(SIZE) -A  $(OUTDIR)/$(TARGET).elf
-##ELFSIZE = $(SIZE) --format=Berkeley --common $(OUTDIR)/$(TARGET).elf
-sizebefore:
-#	@if [ -f  $(OUTDIR)/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_BEFORE); $(ELFSIZE); echo; fi
+ELFSIZE = $(SIZE) -A -x $(OUTDIR)/$(TARGET).elf
 
 sizeafter:
-#	@if [ -f  $(OUTDIR)/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); echo; fi
 	@echo $(MSG_SIZE_AFTER)
 	$(ELFSIZE)
 	
@@ -468,11 +412,11 @@ gccversion :
 
 flash_dump:
 	@echo "Dumping flash"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
 
 flash_load: $(OUTDIR)/$(TARGET).elf
 	@echo "Programming with OPENOCD"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
@@ -584,19 +528,19 @@ clean: begin clean_list finished end
 clean_list :
 ##	@echo
 	@echo $(MSG_CLEANING)
-	$(REMOVE) $(OUTDIR)/$(TARGET).map
-	$(REMOVE) $(OUTDIR)/$(TARGET).elf
-	$(REMOVE) $(OUTDIR)/$(TARGET).hex
-	$(REMOVE) $(OUTDIR)/$(TARGET).bin
-	$(REMOVE) $(OUTDIR)/$(TARGET).sym
-	$(REMOVE) $(OUTDIR)/$(TARGET).lss
-	$(REMOVE) $(ALLOBJ)
-	$(REMOVE) $(LSTFILES)
-	$(REMOVE) $(DEPFILES)
-	$(REMOVE) $(SRC:.c=.s)
-	$(REMOVE) $(SRCARM:.c=.s)
-	$(REMOVE) $(CPPSRC:.cpp=.s)
-	$(REMOVE) $(CPPSRCARM:.cpp=.s)
+	rm -f $(OUTDIR)/$(TARGET).map
+	rm -f $(OUTDIR)/$(TARGET).elf
+	rm -f $(OUTDIR)/$(TARGET).hex
+	rm -f $(OUTDIR)/$(TARGET).bin
+	rm -f $(OUTDIR)/$(TARGET).sym
+	rm -f $(OUTDIR)/$(TARGET).lss
+	rm -f $(ALLOBJ)
+	rm -f $(LSTFILES)
+	rm -f $(DEPFILES)
+	rm -f $(SRC:.c=.s)
+	rm -f $(SRCARM:.c=.s)
+	rm -f $(CPPSRC:.cpp=.s)
+	rm -f $(CPPSRCARM:.cpp=.s)
 
 
 # Create output files directory

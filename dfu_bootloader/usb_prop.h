@@ -20,9 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-extern const DEVICE_PROP Device_Property;
-extern const USER_STANDARD_REQUESTS User_Standard_Requests;
-extern const DEVICE  Device_Table;
+
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void DFU_init(void);
@@ -64,12 +62,12 @@ void DFU_write_crc (void);
 /**************************************************/
 
 typedef enum _DFU_REQUESTS {
-  DFU_DNLOAD = 1,
-  DFU_UPLOAD,
-  DFU_GETSTATUS,
-  DFU_CLRSTATUS,
-  DFU_GETSTATE,
-  DFU_ABORT
+	DFU_DNLOAD = 1,
+	DFU_UPLOAD,
+	DFU_GETSTATUS,
+	DFU_CLRSTATUS,
+	DFU_GETSTATE,
+	DFU_ABORT
 } DFU_REQUESTS;
 
 /**************************************************/

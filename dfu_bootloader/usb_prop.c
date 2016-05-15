@@ -22,7 +22,8 @@
 #include "usb_pwr.h"
 #include "dfu_mal.h"
 
-static void NOP_Proc(void) {
+static void NOP_Proc(void)
+{
 }
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -32,52 +33,47 @@ uint32_t wBlockNum = 0, wlength = 0;
 uint32_t Manifest_State = Manifest_complete;
 uint32_t Pointer = ApplicationAddress;  /* Base Address to Erase, Program or Read */
 
-const DEVICE Device_Table =
-  {
-    EP_NUM,
-    1
-  };
+DEVICE Device_Table = {
+  EP_NUM,
+  1
+};
 
-const DEVICE_PROP Device_Property =
-  {
-    DFU_init,
-    DFU_Reset,
-    DFU_Status_In,
-    DFU_Status_Out,
-    DFU_Data_Setup,
-    DFU_NoData_Setup,
-    DFU_Get_Interface_Setting,
-    DFU_GetDeviceDescriptor,
-    DFU_GetConfigDescriptor,
-    DFU_GetStringDescriptor,
-    0,                    /*DFU_EP0Buffer*/
-    bMaxPacketSize0       /*Max Packet size*/
-  };
+DEVICE_PROP Device_Property = {
+  DFU_init,
+  DFU_Reset,
+  DFU_Status_In,
+  DFU_Status_Out,
+  DFU_Data_Setup,
+  DFU_NoData_Setup,
+  DFU_Get_Interface_Setting,
+  DFU_GetDeviceDescriptor,
+  DFU_GetConfigDescriptor,
+  DFU_GetStringDescriptor,
+  0,                    /*DFU_EP0Buffer*/
+  bMaxPacketSize0       /*Max Packet size*/
+};
 
-const USER_STANDARD_REQUESTS User_Standard_Requests =
-  {
-    DFU_GetConfiguration,
-    DFU_SetConfiguration,
-    DFU_GetInterface,
-    DFU_SetInterface,
-    DFU_GetStatus,
-    DFU_ClearFeature,
-    DFU_SetEndPointFeature,
-    DFU_SetDeviceFeature,
-    DFU_SetDeviceAddress
-  };
+USER_STANDARD_REQUESTS User_Standard_Requests = {
+  DFU_GetConfiguration,
+  DFU_SetConfiguration,
+  DFU_GetInterface,
+  DFU_SetInterface,
+  DFU_GetStatus,
+  DFU_ClearFeature,
+  DFU_SetEndPointFeature,
+  DFU_SetDeviceFeature,
+  DFU_SetDeviceAddress
+};
 
-const ONE_DESCRIPTOR Device_Descriptor =
-  {
-    (uint8_t*)DFU_DeviceDescriptor,
-    DFU_SIZ_DEVICE_DESC
-  };
+ONE_DESCRIPTOR dfuDevice_Descriptor = {
+  (uint8_t*)DFU_DeviceDescriptor,
+  DFU_SIZ_DEVICE_DESC
+};
 
-const ONE_DESCRIPTOR Config_Descriptor =
-  {
-    (uint8_t*)DFU_ConfigDescriptor,
-    DFU_SIZ_CONFIG_DESC
-  };
+const ONE_DESCRIPTOR dfuConfig_Descriptor = {
+  (uint8_t*)DFU_ConfigDescriptor,
+  DFU_SIZ_CONFIG_DESC
+};
 //#ifdef USE_STM3210E_EVAL
 //ONE_DESCRIPTOR DFU_String_Descriptor[7] =
 //#elif defined(USE_STM3210B_EVAL)
@@ -85,22 +81,22 @@ const ONE_DESCRIPTOR Config_Descriptor =
 //#elif defined(USE_STM3210C_EVAL)
 const ONE_DESCRIPTOR DFU_String_Descriptor[5] =
 //#endif /* USE_STM3210E_EVAL */
-  {
-    {       (u8*)DFU_StringLangId,          DFU_SIZ_STRING_LANGID       },
-    {       (u8*)DFU_StringVendor,          DFU_SIZ_STRING_VENDOR       },
-    {       (u8*)DFU_StringProduct,         DFU_SIZ_STRING_PRODUCT      },
-    {       (u8*)DFU_StringSerial,          DFU_SIZ_STRING_SERIAL       },
-    {       (u8*)DFU_StringInterface0,      DFU_SIZ_STRING_INTERFACE0   }
+{
+  {       (u8*)DFU_StringLangId,          DFU_SIZ_STRING_LANGID       },
+  {       (u8*)DFU_StringVendor,          DFU_SIZ_STRING_VENDOR       },
+  {       (u8*)DFU_StringProduct,         DFU_SIZ_STRING_PRODUCT      },
+  {       (u8*)DFU_StringSerial,          DFU_SIZ_STRING_SERIAL       },
+  {       (u8*)DFU_StringInterface0,      DFU_SIZ_STRING_INTERFACE0   }
 #ifdef USE_STM3210B_EVAL
-    ,
-    {       (u8*)DFU_StringInterface1,      DFU_SIZ_STRING_INTERFACE1   }
+  ,
+  {       (u8*)DFU_StringInterface1,      DFU_SIZ_STRING_INTERFACE1   }
 #endif /* USE_STM3210B_EVAL */
-#ifdef USE_STM3210E_EVAL 
-    ,
-    {       (u8*)DFU_StringInterface1,      DFU_SIZ_STRING_INTERFACE1   },
-    {       (u8*)DFU_StringInterface2_1,    DFU_SIZ_STRING_INTERFACE2   }    
+#ifdef USE_STM3210E_EVAL
+  ,
+  {       (u8*)DFU_StringInterface1,      DFU_SIZ_STRING_INTERFACE1   },
+  {       (u8*)DFU_StringInterface2_1,    DFU_SIZ_STRING_INTERFACE2   }
 #endif /* USE_STM3210E_EVAL */
-  };
+};
 
 /* Extern variables ----------------------------------------------------------*/
 extern  uint8_t DeviceState ;
@@ -152,10 +148,10 @@ void DFU_Reset(void)
   /* Current Feature initialization */
   pInformation->Current_Feature = DFU_ConfigDescriptor[7];
 
-#ifdef STM32F10X_CL   
-  /* EP0 is already configured in DFU_Init by OTG_DEV_Init() function 
+#ifdef STM32F10X_CL
+  /* EP0 is already configured in DFU_Init by OTG_DEV_Init() function
       No Other endpoints needed for this firmware */
-#else 
+#else
   _SetBTABLE(BTABLE_ADDRESS);
 
   /* Initialize Endpoint 0 */
@@ -186,8 +182,7 @@ void DFU_SetConfiguration(void)
 {
   DEVICE_INFO *pInfo = &Device_Info;
 
-  if (pInfo->Current_Configuration != 0)
-  {
+  if (pInfo->Current_Configuration != 0) {
     /* Device configured */
     bDeviceState = CONFIGURED;
   }
@@ -225,23 +220,17 @@ void DFU_Status_Out (void)
   DEVICE_INFO *pInfo = &Device_Info;
   uint32_t Addr;
 
-  if (pInfo->USBbRequest == DFU_GETSTATUS)
-  {
-    if (DeviceState == STATE_dfuDNBUSY)
-    {
-      if (wBlockNum == 0)   /* Decode the Special Command*/
-      {
+  if (pInfo->USBbRequest == DFU_GETSTATUS) {
+    if (DeviceState == STATE_dfuDNBUSY) {
+      if (wBlockNum == 0) { /* Decode the Special Command*/
         if ((MAL_Buffer[0] ==  CMD_GETCOMMANDS) && (wlength == 1))
         {}
-        else if  (( MAL_Buffer[0] ==  CMD_SETADDRESSPOINTER ) && (wlength == 5))
-        {
+        else if  (( MAL_Buffer[0] ==  CMD_SETADDRESSPOINTER ) && (wlength == 5)) {
           Pointer  = MAL_Buffer[1];
           Pointer += MAL_Buffer[2] << 8;
           Pointer += MAL_Buffer[3] << 16;
           Pointer += MAL_Buffer[4] << 24;
-        }
-        else if (( MAL_Buffer[0] ==  CMD_ERASE ) && (wlength == 5))
-        {
+        } else if (( MAL_Buffer[0] ==  CMD_ERASE ) && (wlength == 5)) {
           Pointer  = MAL_Buffer[1];
           Pointer += MAL_Buffer[2] << 8;
           Pointer += MAL_Buffer[3] << 16;
@@ -250,8 +239,7 @@ void DFU_Status_Out (void)
         }
       }
 
-      else if (wBlockNum > 1)  // Download Command
-      {
+      else if (wBlockNum > 1) { // Download Command
         Addr = ((wBlockNum - 2) * wTransferSize) + Pointer;
         MAL_Write(Addr, wlength);
       }
@@ -264,9 +252,7 @@ void DFU_Status_Out (void)
       DeviceStatus[2] = 0;
       DeviceStatus[3] = 0;
       return;
-    }
-    else if (DeviceState == STATE_dfuMANIFEST)/* Manifestation in progress*/
-    {
+    } else if (DeviceState == STATE_dfuMANIFEST) { /* Manifestation in progress*/
       DFU_write_crc();
       return;
     }
@@ -286,39 +272,26 @@ RESULT DFU_Data_Setup(uint8_t RequestNo)
   uint8_t *(*CopyRoutine)(uint16_t);
   CopyRoutine = NULL;
 
-  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
-  {
+  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT)) {
     if (RequestNo == DFU_UPLOAD && (DeviceState == STATE_dfuIDLE
-                                    || DeviceState == STATE_dfuUPLOAD_IDLE ))
-    {
+                                    || DeviceState == STATE_dfuUPLOAD_IDLE )) {
       CopyRoutine = UPLOAD;
-    }
-    else if (RequestNo == DFU_DNLOAD && (DeviceState == STATE_dfuIDLE
-                                         || DeviceState == STATE_dfuDNLOAD_IDLE))
-    {
+    } else if (RequestNo == DFU_DNLOAD && (DeviceState == STATE_dfuIDLE
+                                           || DeviceState == STATE_dfuDNLOAD_IDLE)) {
       DeviceState = STATE_dfuDNLOAD_SYNC;
       CopyRoutine = DNLOAD;
-    }
-    else if (RequestNo == DFU_GETSTATE)
-    {
+    } else if (RequestNo == DFU_GETSTATE) {
       CopyRoutine = GETSTATE;
-    }
-    else if (RequestNo == DFU_GETSTATUS)
-    {
+    } else if (RequestNo == DFU_GETSTATUS) {
       CopyRoutine = GETSTATUS;
-    }
-    else
-    {
+    } else {
       return USB_UNSUPPORT;
     }
-  }
-  else
-  {
+  } else {
     return USB_UNSUPPORT;
   }
 
-  if (CopyRoutine == NULL)
-  {
+  if (CopyRoutine == NULL) {
     return USB_UNSUPPORT;
   }
 
@@ -339,14 +312,11 @@ RESULT DFU_Data_Setup(uint8_t RequestNo)
 RESULT DFU_NoData_Setup(uint8_t RequestNo)
 {
 
-  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
-  {
+  if (Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT)) {
     /*DFU_NDLOAD*/
-    if (RequestNo == DFU_DNLOAD)
-    {
+    if (RequestNo == DFU_DNLOAD) {
       /* End of DNLOAD operation*/
-      if (DeviceState == STATE_dfuDNLOAD_IDLE || DeviceState == STATE_dfuIDLE )
-      {
+      if (DeviceState == STATE_dfuDNLOAD_IDLE || DeviceState == STATE_dfuIDLE ) {
         Manifest_State = Manifest_In_Progress;
         DeviceState = STATE_dfuMANIFEST_SYNC;
         DeviceStatus[1] = 0;
@@ -357,8 +327,7 @@ RESULT DFU_NoData_Setup(uint8_t RequestNo)
       }
     }
     /*DFU_UPLOAD*/
-    else if (RequestNo == DFU_UPLOAD)
-    {
+    else if (RequestNo == DFU_UPLOAD) {
       DeviceState = STATE_dfuIDLE;
       DeviceStatus[1] = 0;
       DeviceStatus[2] = 0;
@@ -368,11 +337,9 @@ RESULT DFU_NoData_Setup(uint8_t RequestNo)
     }
 
     /*DFU_CLRSTATUS*/
-    else if (RequestNo == DFU_CLRSTATUS)
-    {
+    else if (RequestNo == DFU_CLRSTATUS) {
 
-      if (DeviceState == STATE_dfuERROR)
-      {
+      if (DeviceState == STATE_dfuERROR) {
         DeviceState = STATE_dfuIDLE;
         DeviceStatus[0] = STATUS_OK;/*bStatus*/
         DeviceStatus[1] = 0;
@@ -380,9 +347,8 @@ RESULT DFU_NoData_Setup(uint8_t RequestNo)
         DeviceStatus[3] = 0; /*bwPollTimeout=0ms*/
         DeviceStatus[4] = DeviceState;/*bState*/
         DeviceStatus[5] = 0;/*iString*/
-      }
-      else
-      {   /*State Error*/
+      } else {
+        /*State Error*/
         DeviceState = STATE_dfuERROR;
         DeviceStatus[0] = STATUS_ERRUNKNOWN;/*bStatus*/
         DeviceStatus[1] = 0;
@@ -394,12 +360,10 @@ RESULT DFU_NoData_Setup(uint8_t RequestNo)
       return USB_SUCCESS;
     }
     /*DFU_ABORT*/
-    else if (RequestNo == DFU_ABORT)
-    {
+    else if (RequestNo == DFU_ABORT) {
       if (DeviceState == STATE_dfuIDLE || DeviceState == STATE_dfuDNLOAD_SYNC
           || DeviceState == STATE_dfuDNLOAD_IDLE || DeviceState == STATE_dfuMANIFEST_SYNC
-          || DeviceState == STATE_dfuUPLOAD_IDLE )
-      {
+          || DeviceState == STATE_dfuUPLOAD_IDLE ) {
         DeviceState = STATE_dfuIDLE;
         DeviceStatus[0] = STATUS_OK;
         DeviceStatus[1] = 0;
@@ -428,7 +392,7 @@ RESULT DFU_NoData_Setup(uint8_t RequestNo)
 *******************************************************************************/
 uint8_t *DFU_GetDeviceDescriptor(uint16_t Length)
 {
-  return Standard_GetDescriptorData(Length, &Device_Descriptor);
+  return Standard_GetDescriptorData(Length, &dfuDevice_Descriptor);
 }
 
 /*******************************************************************************
@@ -440,7 +404,7 @@ uint8_t *DFU_GetDeviceDescriptor(uint16_t Length)
 *******************************************************************************/
 uint8_t *DFU_GetConfigDescriptor(uint16_t Length)
 {
-  return Standard_GetDescriptorData (Length, &Config_Descriptor);
+  return Standard_GetDescriptorData (Length, &dfuConfig_Descriptor);
 }
 
 /*******************************************************************************
@@ -454,12 +418,9 @@ uint8_t *DFU_GetStringDescriptor(uint16_t Length)
 {
   uint8_t wValue0 = pInformation->USBwValue0;
 
-  if (wValue0 > 8)
-  {
+  if (wValue0 > 8) {
     return NULL;
-  }
-  else
-  {
+  } else {
     return Standard_GetDescriptorData(Length, &DFU_String_Descriptor[wValue0]);
   }
 }
@@ -475,12 +436,9 @@ uint8_t *DFU_GetStringDescriptor(uint16_t Length)
 *******************************************************************************/
 RESULT DFU_Get_Interface_Setting(uint8_t Interface, uint8_t AlternateSetting)
 {
-  if (AlternateSetting > 3)
-  {
+  if (AlternateSetting > 3) {
     return USB_UNSUPPORT;   /* In this application we don't have more than 3 AlternateSettings */
-  }
-  else if (Interface > 2)
-  {
+  } else if (Interface > 2) {
     return USB_UNSUPPORT; /* In this application we have only 1 interfaces */
   }
 
@@ -516,14 +474,10 @@ uint8_t *UPLOAD(uint16_t Length)
 
   offset = pInformation->Ctrl_Info.Usb_wOffset;
 
-  if (wBlockNum == 0)  /* Get Command */
-  {
-    if (wlength > 3)
-    {
+  if (wBlockNum == 0) { /* Get Command */
+    if (wlength > 3) {
       DeviceState = STATE_dfuIDLE ;
-    }
-    else
-    {
+    } else {
       DeviceState = STATE_dfuUPLOAD_IDLE;
     }
 
@@ -536,16 +490,13 @@ uint8_t *UPLOAD(uint16_t Length)
     MAL_Buffer[1] = CMD_SETADDRESSPOINTER;
     MAL_Buffer[2] = CMD_ERASE;
 
-    if (Length == 0)
-    {
+    if (Length == 0) {
       pInformation->Ctrl_Info.Usb_wLength = 3 ;
       return NULL;
     }
 
-    return(&MAL_Buffer[0]);
-  }
-  else if (wBlockNum > 1)
-  {
+    return (&MAL_Buffer[0]);
+  } else if (wBlockNum > 1) {
     DeviceState = STATE_dfuUPLOAD_IDLE ;
     DeviceStatus[4] = DeviceState;
     DeviceStatus[1] = 0;
@@ -556,15 +507,12 @@ uint8_t *UPLOAD(uint16_t Length)
     Phy_Addr = MAL_Read(Addr, wlength);
     returned = wlength - offset;
 
-    if (Length == 0)
-    {
+    if (Length == 0) {
       pInformation->Ctrl_Info.Usb_wLength = returned ;
       return NULL;
     }
-    return(Phy_Addr + offset);
-  }
-  else  /* unsupported wBlockNum */
-  {
+    return (Phy_Addr + offset);
+  } else { /* unsupported wBlockNum */
     DeviceState = STATUS_ERRSTALLEDPKT;
     DeviceStatus[4] = DeviceState;
     DeviceStatus[1] = 0;
@@ -606,13 +554,12 @@ uint8_t *DNLOAD (uint16_t Length)
 
   returned = wlength - offset;
 
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength = returned ;
     return NULL;
   }
 
-  return((uint8_t*)MAL_Buffer + offset);
+  return ((uint8_t*)MAL_Buffer + offset);
 }
 
 /*******************************************************************************
@@ -624,13 +571,11 @@ uint8_t *DNLOAD (uint16_t Length)
 *******************************************************************************/
 uint8_t *GETSTATE(uint16_t Length)
 {
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength = 1 ;
     return NULL;
-  }
-  else
-    return(&DeviceState);
+  } else
+    return (&DeviceState);
 }
 
 /*******************************************************************************
@@ -642,64 +587,52 @@ uint8_t *GETSTATE(uint16_t Length)
 *******************************************************************************/
 uint8_t *GETSTATUS(uint16_t Length)
 {
-  switch (DeviceState)
-  {
-    case   STATE_dfuDNLOAD_SYNC:
-      if (wlength != 0)
-      {
-        DeviceState = STATE_dfuDNBUSY;
-        DeviceStatus[4] = DeviceState;
-        if ((wBlockNum == 0) && (MAL_Buffer[0] == CMD_ERASE))
-        {
-          MAL_GetStatus(Pointer, 0, DeviceStatus);
-        }
-        else
-        {
-          MAL_GetStatus(Pointer, 1, DeviceStatus);
-        }
+  switch (DeviceState) {
+  case   STATE_dfuDNLOAD_SYNC:
+    if (wlength != 0) {
+      DeviceState = STATE_dfuDNBUSY;
+      DeviceStatus[4] = DeviceState;
+      if ((wBlockNum == 0) && (MAL_Buffer[0] == CMD_ERASE)) {
+        MAL_GetStatus(Pointer, 0, DeviceStatus);
+      } else {
+        MAL_GetStatus(Pointer, 1, DeviceStatus);
       }
-      else  /* (wlength==0)*/
-      {
-        DeviceState = STATE_dfuDNLOAD_IDLE;
-        DeviceStatus[4] = DeviceState;
-        DeviceStatus[1] = 0;
-        DeviceStatus[2] = 0;
-        DeviceStatus[3] = 0;
+    } else { /* (wlength==0)*/
+      DeviceState = STATE_dfuDNLOAD_IDLE;
+      DeviceStatus[4] = DeviceState;
+      DeviceStatus[1] = 0;
+      DeviceStatus[2] = 0;
+      DeviceStatus[3] = 0;
 
-      }
-      break;
-    case   STATE_dfuMANIFEST_SYNC :
-      if (Manifest_State == Manifest_In_Progress)
-      {
-        DeviceState = STATE_dfuMANIFEST;
-        DeviceStatus[4] = DeviceState;
-        DeviceStatus[1] = 1;             /*bwPollTimeout = 1ms*/
-        DeviceStatus[2] = 0;
-        DeviceStatus[3] = 0;
-        //break;
-      }
-      else if (Manifest_State == Manifest_complete && Config_Descriptor.Descriptor[20]
-               & 0x04)
-      {
-        DeviceState = STATE_dfuIDLE;
-        DeviceStatus[4] = DeviceState;
-        DeviceStatus[1] = 0;
-        DeviceStatus[2] = 0;
-        DeviceStatus[3] = 0;
-        //break;
-      }
-      break;
-    default :
-      break;
+    }
+    break;
+  case   STATE_dfuMANIFEST_SYNC :
+    if (Manifest_State == Manifest_In_Progress) {
+      DeviceState = STATE_dfuMANIFEST;
+      DeviceStatus[4] = DeviceState;
+      DeviceStatus[1] = 1;             /*bwPollTimeout = 1ms*/
+      DeviceStatus[2] = 0;
+      DeviceStatus[3] = 0;
+      //break;
+    } else if (Manifest_State == Manifest_complete && dfuConfig_Descriptor.Descriptor[20]
+               & 0x04) {
+      DeviceState = STATE_dfuIDLE;
+      DeviceStatus[4] = DeviceState;
+      DeviceStatus[1] = 0;
+      DeviceStatus[2] = 0;
+      DeviceStatus[3] = 0;
+      //break;
+    }
+    break;
+  default :
+    break;
   }
 
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength = 6 ;
     return NULL;
-  }
-  else
-    return(&(DeviceStatus[0]));
+  } else
+    return (&(DeviceStatus[0]));
 }
 
 /*******************************************************************************
@@ -713,17 +646,14 @@ void DFU_write_crc(void)
 {
   Manifest_State = Manifest_complete;
 
-  if (Config_Descriptor.Descriptor[20] & 0x04)
-  {
+  if (dfuConfig_Descriptor.Descriptor[20] & 0x04) {
     DeviceState = STATE_dfuMANIFEST_SYNC;
     DeviceStatus[4] = DeviceState;
     DeviceStatus[1] = 0;
     DeviceStatus[2] = 0;
     DeviceStatus[3] = 0;
     return;
-  }
-  else
-  {
+  } else {
     DeviceState = STATE_dfuMANIFEST_WAIT_RESET;
     DeviceStatus[4] = DeviceState;
     DeviceStatus[1] = 0;

@@ -40,31 +40,31 @@ uint32_t JumpAddress;
 extern uint32_t _isr_vectorsflash_offs;
 void NVIC_Configuration(void)
 {
-	/* Set the Vector Table base location at 0x08000000+_isr_vectorsflash_offs */
-	NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)&_isr_vectorsflash_offs);
+  /* Set the Vector Table base location at 0x08000000+_isr_vectorsflash_offs */
+  NVIC_SetVectorTable(NVIC_VectTab_FLASH, (uint32_t)&_isr_vectorsflash_offs);
 }
 
 void RCC_Configuration(void)
 {
-	SystemInit();
-	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
-	RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);
-	// enable usb 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+  SystemInit();
+  SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
+  RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);
+  // enable usb
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 }
 
 void GPIO_Configuration(void)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStructure;
 
-	// Configure USB pull-up pin
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
+  // Configure USB pull-up pin
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-	GPIO_ResetBits(GPIOB, GPIO_Pin_5);
+  GPIO_ResetBits(GPIOB, GPIO_Pin_5);
 }
 
 /*******************************************************************************
@@ -76,14 +76,14 @@ void GPIO_Configuration(void)
 *******************************************************************************/
 int main(void)
 {
-	NVIC_InitTypeDef NVIC_InitStructure;
+  NVIC_InitTypeDef NVIC_InitStructure;
   DFU_Button_Config();
 
   /* Check if the Key push-button on STM3210x-EVAL Board is pressed */
-  if (DFU_Button_Read() != 0x00)
-  { /* Test if user code is programmed starting from address 0x8003000 */
-    if (((*(__IO uint32_t*)ApplicationAddress) & 0x2FFE0000 ) == 0x20000000)
-    { /* Jump to user application */
+  if (DFU_Button_Read() != 0x00) {
+    /* Test if user code is programmed starting from address 0x8003000 */
+    if (((*(__IO uint32_t*)ApplicationAddress) & 0x2FFE0000 ) == 0x20000000) {
+      /* Jump to user application */
 
       JumpAddress = *(__IO uint32_t*) (ApplicationAddress + 4);
       Jump_To_Application = (pFunction) JumpAddress;
@@ -98,25 +98,25 @@ int main(void)
   DeviceStatus[0] = STATUS_ERRFIRMWARE;
   DeviceStatus[4] = DeviceState;
 
-	RCC_Configuration();
-	NVIC_Configuration();
-  
+  RCC_Configuration();
+  NVIC_Configuration();
+
   NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-	GPIO_Configuration();
+  GPIO_Configuration();
 
   /* Init the media interface */
   MAL_Init();
-  
-	/* potrebne ? */
-	USB_Cable_Config(ENABLE);
-	
-  //USB_Init();
-	USB_Init(&Device_Table, &Device_Property, &User_Standard_Requests);
+
+  /* potrebne ? */
+  USB_Cable_Config(ENABLE);
+
+  USB_Init();
+  // USB_Init(&Device_Table, &Device_Property, &User_Standard_Requests);
   /* Main loop */
   while (1)
   {}
