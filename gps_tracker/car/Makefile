@@ -16,7 +16,8 @@
 # MD:
 # - removed unused stuff to simplify maintnance 
 
-TCHAIN_PREFIX = arm-softfloat-elf-
+# TCHAIN_PREFIX = arm-softfloat-elf-
+TCHAIN_PREFIX = arm-none-eabi-
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)

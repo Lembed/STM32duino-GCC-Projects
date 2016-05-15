@@ -13,8 +13,8 @@
 # on Unix/Linux-Systems too. Just a rather up-to-date GNU make is
 # needed.
 #
-TCHAIN_PREFIX = arm-softfloat-elf-
-
+# TCHAIN_PREFIX = arm-softfloat-elf-
+TCHAIN_PREFIX = arm-none-eabi-
 
 # YES enables -mthumb option to flags for source-files listed 
 # in SRC and CPPSRC and -mthumb-interwork option for all source

@@ -78,8 +78,8 @@
 
 # Toolchain prefix (i.e arm-elf- -> arm-elf-gcc.exe)
 #TCHAIN_PREFIX = arm-eabi-
-TCHAIN_PREFIX = arm-softfloat-elf-
-#CHAIN_PREFIX = arm-none-eabi-
+# TCHAIN_PREFIX = arm-softfloat-elf-
+TCHAIN_PREFIX = arm-none-eabi-
 REMOVE_CMD=rm
 
 FLASH_TOOL = OPENOCD
