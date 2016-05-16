@@ -26,13 +26,6 @@ SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
 
 BOARD    = STM32F103STK
 
-ifeq ($(BOARD), STM32F103STK)
-OUT_FILE = stm32f103stk
-CHIP     = STM32F103VB
-F_XTAL   = 8000000
-RAMSIZE  = 0x5000
-LINKERSCRIPTPATH = ../lib/gcc
-endif
 # *** This example only supports "FLASH_RUN" ***
 # RUN_MODE is passed as define and used for the linker-script filename,
 # the user has to implement the necessary operations for 
@@ -75,12 +68,16 @@ MEMSDIR = $(APPLIBDIR)/MEMS
 STMEEEMULDIR = $(APPLIBDIR)/EEPROMEmulation_AN
 STMEEEMULSRCDIR = $(STMEEEMULDIR)/source
 STMEEEMULINCDIR = $(STMEEEMULDIR)/include
+SRCDIR = src
+INCLUDEDIR = inc
+SCRIPTDIR = scripts
+LINKSCIPTDIR = linkscript
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 
 ## Application:
-SRC = main.c rtc.c dtmf.c dtmf_det.c ad.c
+SRC = main.c $(SRCDIR)/rtc.c $(SRCDIR)/dtmf.c $(SRCDIR)/dtmf_det.c $(SRCDIR)/ad.c
 
 ## compiler-specific sources
 SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_md.c
@@ -135,6 +132,13 @@ SRC += $(STMSPDSRCDIR)/misc.c
 #SRC += $(STMUSBSRCDIR)/usb_core.c
 #SRC += $(STMUSBSRCDIR)/usb_regs.c
 
+
+LINKERSCRIPTPATH = $(LINKSCIPTDIR)
+
+OUT_FILE = stm32f103stk
+CHIP     = STM32F103VB
+F_XTAL   = 8000000
+RAMSIZE  = 0x5000
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -414,7 +418,7 @@ gccversion :
 
 flash_dump:
 	@echo "Dumping flash"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
 
 flash_load: bin
 #	@echo "Programming with OPENOCD"

@@ -70,13 +70,17 @@ MEMSDIR = $(APPLIBDIR)/MEMS
 STMEEEMULDIR = $(APPLIBDIR)/EEPROMEmulation_AN
 STMEEEMULSRCDIR = $(STMEEEMULDIR)/source
 STMEEEMULINCDIR = $(STMEEEMULDIR)/include
+SRCDIR = src
+INCLUDEDIR = inc
+SCRIPTDIR = scripts
+LINKSCIPTDIR = linkscript
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 
 ## Application:
-SRC = main.c hw_config.c usb_desc.c usb_istr.c usb_prop.c usb_pwr.c
-SRC += dfu_mal.c flash_if.c
+SRC = main.c $(SRCDIR)/hw_config.c $(SRCDIR)/usb_desc.c $(SRCDIR)/usb_istr.c $(SRCDIR)/usb_prop.c $(SRCDIR)/usb_pwr.c
+SRC += $(SRCDIR)/dfu_mal.c $(SRCDIR)/flash_if.c
 
 
 ## compiler-specific sources
@@ -181,7 +185,7 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = ../lib/gcc
+LINKERSCRIPTPATH = $(LINKSCIPTDIR)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
@@ -411,11 +415,11 @@ gccversion :
 
 flash_dump:
 	@echo "Dumping flash"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
 
 flash_load: $(OUTDIR)/$(TARGET).elf
 	@echo "Programming with OPENOCD"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf

@@ -73,12 +73,16 @@ STMEEEMULINCDIR = $(STMEEEMULDIR)/include
 CANFESTIVALDIR = $(APPLIBDIR)/CanFestival-3
 CANFESTIVALINCDIR = $(CANFESTIVALDIR)/include CANFESTIVALINCDIR = $(CANFESTIVALDIR)/include/STM32
 CANFESTIVALSRCDIR = $(CANFESTIVALDIR)/src
+SRCDIR = src
+INCLUDEDIR = inc
+SCRIPTDIR = scripts
+LINKSCIPTDIR = linkscript
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 ## Demo-Application:
-SRC = main.c STM32Encoders.c
-SRC += enc1.c enc2.c can.c
+SRC = main.c $(SRCDIR)/STM32Encoders.c
+SRC += $(SRCDIR)/enc1.c $(SRCDIR)/enc2.c $(SRCDIR)/can.c
 
 ## compiler-specific sources
 SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_ld.c
@@ -161,7 +165,7 @@ EXTRAINCDIRS  = $(STMSPDINCDIR) $(CMSISDIR)
 EXTRAINCDIRS  += $(CANFESTIVALINCDIR) $(CANFESTIVALINCDIR)/STM32
 #EXTRAINCDIRS  += $(MEMSDIR)
 EXTRAINCDIRS  += $(STMEEEMULINCDIR)
-#EXTRAINCDIRS  += $(STMUSBINCDIR)
+EXTRAINCDIRS  += $(INCLUDEDIR)
 
 # List any extra directories to look for library files here.
 # Also add directories where the linker should search for
@@ -178,7 +182,7 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = $(APPLIBDIR)/gcc
+LINKERSCRIPTPATH = $(SCRIPTDIR)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
@@ -411,11 +415,11 @@ gccversion :
 
 flash_dump:
 	@echo "Dumping flash"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
 
 flash_load: $(OUTDIR)/$(TARGET).elf
 	@echo "Programming with OPENOCD"
-	openocd -f openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
+	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
