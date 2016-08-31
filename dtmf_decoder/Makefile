@@ -16,17 +16,15 @@
 # MD:
 # - removed unused stuff to simplify maintnance 
 
-# TCHAIN_PREFIX = arm-softfloat-elf-
 TCHAIN_PREFIX = arm-none-eabi-
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
 # - SUBMDL used for linker-script name (-T) and passed as define
 MCU      = cortex-m3
-CHIP     = STM32F103T6U6
-F_XTAL   = 8000000
-RAMSIZE  = 0x2800
 SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
+
+BOARD    = STM32F103STK
 
 # *** This example only supports "FLASH_RUN" ***
 # RUN_MODE is passed as define and used for the linker-script filename,
@@ -47,7 +45,7 @@ VECTOR_TABLE_LOCATION=VECT_TAB_FLASH
 OUTDIR = $(RUN_MODE)
 
 # Target file name (without extension).
-TARGET = stm32_serial
+TARGET = $(OUT_FILE)
 
 # Pathes to libraries
 APPLIBDIR = ../library
@@ -79,30 +77,28 @@ LINKSCIPTDIR = linkscript
 # use file-extension c for "c-only"-files
 
 ## Application:
-SRC = main.c $(SRCDIR)/hw_config.c $(SRCDIR)/usb_desc.c $(SRCDIR)/usb_istr.c $(SRCDIR)/usb_prop.c $(SRCDIR)/usb_pwr.c
-SRC += $(SRCDIR)/dfu_mal.c $(SRCDIR)/flash_if.c
-
+SRC = main.c $(SRCDIR)/rtc.c $(SRCDIR)/dtmf.c $(SRCDIR)/dtmf_det.c $(SRCDIR)/ad.c
 
 ## compiler-specific sources
-SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_ld.c
-SRC += $(APPLIBDIR)/gcc/fault_handlers.c
+SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_md.c
 
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
 SRC += $(CMSISDIR)/system_stm32f10x.c
+SRC += $(APPLIBDIR)/gcc/fault_handlers.c
 
 ## used parts of the STM-Library
 #SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
+#SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
+#SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
 SRC += $(STMSPDSRCDIR)/misc.c
 
 # FreeRTOS-specific stuff
@@ -129,13 +125,20 @@ SRC += $(STMSPDSRCDIR)/misc.c
 #SRC += $(STMEEEMULSRCDIR)/eeprom.c
 
 # usb 
-SRC += $(STMUSBSRCDIR)/usb_sil.c
-SRC += $(STMUSBSRCDIR)/usb_init.c
-SRC += $(STMUSBSRCDIR)/usb_int.c
-SRC += $(STMUSBSRCDIR)/usb_mem.c
-SRC += $(STMUSBSRCDIR)/usb_core.c
-SRC += $(STMUSBSRCDIR)/usb_regs.c
+#SRC += $(STMUSBSRCDIR)/usb_sil.c
+#SRC += $(STMUSBSRCDIR)/usb_init.c
+#SRC += $(STMUSBSRCDIR)/usb_int.c
+#SRC += $(STMUSBSRCDIR)/usb_mem.c
+#SRC += $(STMUSBSRCDIR)/usb_core.c
+#SRC += $(STMUSBSRCDIR)/usb_regs.c
 
+
+LINKERSCRIPTPATH = $(LINKSCIPTDIR)
+
+OUT_FILE = stm32f103stk
+CHIP     = STM32F103VB
+F_XTAL   = 8000000
+RAMSIZE  = 0x5000
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -184,13 +187,11 @@ EXTRA_LIBDIRS =
 #    EXTRA_LIBS = newlib-lpc
 EXTRA_LIBS =
 
-# Path to Linker-Scripts
-LINKERSCRIPTPATH = $(LINKSCIPTDIR)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
 # (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = s
+OPT = 0
 #OPT = 2
 #OPT = 3
 #OPT = 0
@@ -211,6 +212,7 @@ CDEFS = -DSTM32F10X_MD
 CDEFS += -DRAMSIZE=$(RAMSIZE)
 CDEFS += -DHSE_VALUE=$(F_XTAL)UL
 CDEFS += -D$(SYSCLOCK_CL)
+CDEFS += -D$(BOARD)
 CDEFS += -DUSE_STDPERIPH_DRIVER
 #CDEFS += -DSTM32_SD_USE_DMA
 CDEFS += -DSTARTUP_DELAY
@@ -267,7 +269,7 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 ##CFLAGS += -mapcs-frame 
 ##CFLAGS += -fomit-frame-pointer
 CFLAGS += -ffunction-sections -fdata-sections
-#CFLAGS += -fpromote-loop-indices
+CFLAGS += -mfix-cortex-m3-ldrd
 CFLAGS += -Wall -Wextra
 CFLAGS += -Wimplicit -Wcast-align -Wpointer-arith
 CFLAGS += -Wredundant-decls -Wshadow -Wcast-qual -Wcast-align
@@ -290,6 +292,7 @@ CPPFLAGS =
 #  -g$(DEBUG): have the assembler create line number information
 ASFLAGS  = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp
 ASFLAGS += $(ADEFS)
+ASFLASG += -ahls -mapcs-32
 ASFLAGS += -Wa,-adhlns=$(addprefix $(OUTDIR)/, $(notdir $(addsuffix .lst, $(basename $<))))
 ASFLAGS += -Wa,-g$(DEBUG)
 ASFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
@@ -417,9 +420,12 @@ flash_dump:
 	@echo "Dumping flash"
 	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "flash probe 0" -c "dump_image flash.img 0x08000000 0x20000" -c "reset run" -c "exit"
 
-flash_load: $(OUTDIR)/$(TARGET).elf
-	@echo "Programming with OPENOCD"
-	openocd -f $(SCRIPTDIR)/openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
+flash_load: bin
+#	@echo "Programming with OPENOCD"
+#	openocd -f openocd.cfg -c "init" -c "halt" -c "stm32x mass_erase 0" -c "flash write_image $(OUTDIR)/$(TARGET).elf elf" -c "soft_reset_halt" -c "reset run" -c "exit"
+	../dfuse-dfu-util/src/dfu-util --dfuse 0x8002000 -D $(OUTDIR)/stm32_ises_blue_usb.bin -d 0x0483:0xdf11 -R
+
+
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf

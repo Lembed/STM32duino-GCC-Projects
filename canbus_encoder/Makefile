@@ -6,24 +6,29 @@
 # Please read the make user manual!
 #
 # The user-configuration is based on the WinAVR makefile-template
-# written by Eric B. Weddington, JÃ¶rg Wunsch, et al. but internal
+# written by Eric B. Weddington, Jörg Wunsch, et al. but internal
 # handling used here is very different.
 # This makefile can also be used with the GNU tools included in
 # Yagarto, GNUARM or the codesourcery packages. It should work
 # on Unix/Linux-Systems too. Just a rather up-to-date GNU make is
 # needed.
 #
-# MD:
-# - removed unused stuff to simplify maintnance 
-
 # TCHAIN_PREFIX = arm-softfloat-elf-
 TCHAIN_PREFIX = arm-none-eabi-
+
+# YES enables -mthumb option to flags for source-files listed 
+# in SRC and CPPSRC and -mthumb-interwork option for all source
+USE_THUMB_MODE = YES
+#USE_THUMB_MODE = NO
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
 # - SUBMDL used for linker-script name (-T) and passed as define
+# - BOARD just passed as define (optional)
 MCU      = cortex-m3
 CHIP     = STM32F103T6U6
+BOARD    = EK_STM32F
+CLASS    = STM32F10X_LD
 F_XTAL   = 8000000
 RAMSIZE  = 0x2800
 SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
@@ -47,13 +52,13 @@ VECTOR_TABLE_LOCATION=VECT_TAB_FLASH
 OUTDIR = $(RUN_MODE)
 
 # Target file name (without extension).
-TARGET = stm32_serial
+TARGET = stm32_can_encoders
 
+RTOS_PORT = GCC/ARM_CM3
 # Pathes to libraries
 APPLIBDIR = ../library
 RTOSDIR = $(APPLIBDIR)/FreeRTOS
 RTOSSRCDIR = $(RTOSDIR)
-RTOS_PORT = GCC/ARM_CM3
 RTOSINCDIR = $(RTOSDIR)/portable/$(RTOS_PORT) $(RTOSDIR)/include 
 RTOSPORTSRCDIR = $(RTOSDIR)/portable/$(RTOS_PORT)
 RTOSMEMSRCDIR = $(RTOSDIR)/portable/MemMang
@@ -61,15 +66,13 @@ STMLIBDIR = $(APPLIBDIR)
 STMSPDDIR = $(STMLIBDIR)/STM32F10x_StdPeriph_Driver
 STMSPDSRCDIR = $(STMSPDDIR)/src
 STMSPDINCDIR = $(STMSPDDIR)/inc
-STMUSBDIR = $(STMLIBDIR)/STM32_USB-FS-Device_Driver
-STMUSBSRCDIR = $(STMUSBDIR)/src
-STMUSBINCDIR = $(STMUSBDIR)/inc
 CMSISDIR  = $(STMLIBDIR)/CMSIS/Core/CM3
-MEMSDIR = $(APPLIBDIR)/MEMS
-
 STMEEEMULDIR = $(APPLIBDIR)/EEPROMEmulation_AN
 STMEEEMULSRCDIR = $(STMEEEMULDIR)/source
 STMEEEMULINCDIR = $(STMEEEMULDIR)/include
+CANFESTIVALDIR = $(APPLIBDIR)/CanFestival-3
+CANFESTIVALINCDIR = $(CANFESTIVALDIR)/include CANFESTIVALINCDIR = $(CANFESTIVALDIR)/include/STM32
+CANFESTIVALSRCDIR = $(CANFESTIVALDIR)/src
 SRCDIR = src
 INCLUDEDIR = inc
 SCRIPTDIR = scripts
@@ -77,32 +80,28 @@ LINKSCIPTDIR = linkscript
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
-
-## Application:
-SRC = main.c $(SRCDIR)/hw_config.c $(SRCDIR)/usb_desc.c $(SRCDIR)/usb_istr.c $(SRCDIR)/usb_prop.c $(SRCDIR)/usb_pwr.c
-SRC += $(SRCDIR)/dfu_mal.c $(SRCDIR)/flash_if.c
-
+## Demo-Application:
+SRC = main.c $(SRCDIR)/STM32Encoders.c
+SRC += $(SRCDIR)/enc1.c $(SRCDIR)/enc2.c $(SRCDIR)/can.c
 
 ## compiler-specific sources
 SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_ld.c
 SRC += $(APPLIBDIR)/gcc/fault_handlers.c
-
 ## CMSIS for STM32
 SRC += $(CMSISDIR)/core_cm3.c
 SRC += $(CMSISDIR)/system_stm32f10x.c
-
 ## used parts of the STM-Library
-#SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_exti.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_can.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
 SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
+#RC += $(STMSPDSRCDIR)/stm32f10x_spi.c
 #SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
 #SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
 #SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
+SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
+#SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
 SRC += $(STMSPDSRCDIR)/misc.c
 
 # FreeRTOS-specific stuff
@@ -112,29 +111,26 @@ SRC += $(STMSPDSRCDIR)/misc.c
 #SRC += $(RTOSSRCDIR)/tasks.c
 #SRC += $(RTOSPORTSRCDIR)/port.c
 #SRC += $(RTOSMEMSRCDIR)/heap_2.c
+# needed for newlib
 #SRC += $(RTOSMEMSRCDIR)/alloc.c
 
-# mems testing
-#SRC += $(MEMSDIR)/mems_math.c
-#SRC += $(MEMSDIR)/mems_quaternion.c
-#SRC += $(MEMSDIR)/mems_vector.c
-#SRC += $(MEMSDIR)/mems_matrix.c
-#SRC += $(MEMSDIR)/mems_accel.c
-#SRC += $(MEMSDIR)/mems_gyro.c
-#SRC += $(MEMSDIR)/mems_norm.c
-#SRC += $(MEMSDIR)/mems_pos.c
-#SRC += $(MEMSDIR)/mems_kalman.c
+#canfestival
+SRC += $(CANFESTIVALSRCDIR)/dcf.c
+SRC += $(CANFESTIVALSRCDIR)/timer.c
+SRC += $(CANFESTIVALSRCDIR)/emcy.c
+SRC += $(CANFESTIVALSRCDIR)/lifegrd.c
+SRC += $(CANFESTIVALSRCDIR)/nmtMaster.c
+SRC += $(CANFESTIVALSRCDIR)/nmtSlave.c
+SRC += $(CANFESTIVALSRCDIR)/objacces.c
+SRC += $(CANFESTIVALSRCDIR)/pdo.c
+SRC += $(CANFESTIVALSRCDIR)/sdo.c
+SRC += $(CANFESTIVALSRCDIR)/states.c
+SRC += $(CANFESTIVALSRCDIR)/sync.c
+#SRC += $(CANFESTIVALSRCDIR)/lss.c
+
 
 ## EEprom Emulation AppNote Code
 #SRC += $(STMEEEMULSRCDIR)/eeprom.c
-
-# usb 
-SRC += $(STMUSBSRCDIR)/usb_sil.c
-SRC += $(STMUSBSRCDIR)/usb_init.c
-SRC += $(STMUSBSRCDIR)/usb_int.c
-SRC += $(STMUSBSRCDIR)/usb_mem.c
-SRC += $(STMUSBSRCDIR)/usb_core.c
-SRC += $(STMUSBSRCDIR)/usb_regs.c
 
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
@@ -165,10 +161,11 @@ ASRCARM =
 # List any extra directories to look for include files here.
 #    Each directory must be seperated by a space.
 EXTRAINCDIRS  = $(STMSPDINCDIR) $(CMSISDIR)
-EXTRAINCDIRS  += $(RTOSINCDIR)
-EXTRAINCDIRS  += $(MEMSDIR)
-#EXTRAINCDIRS  += $(STMEEEMULINCDIR)
-EXTRAINCDIRS  += $(STMUSBINCDIR)
+#XTRAINCDIRS  += $(RTOSINCDIR)
+EXTRAINCDIRS  += $(CANFESTIVALINCDIR) $(CANFESTIVALINCDIR)/STM32
+#EXTRAINCDIRS  += $(MEMSDIR)
+EXTRAINCDIRS  += $(STMEEEMULINCDIR)
+EXTRAINCDIRS  += $(INCLUDEDIR)
 
 # List any extra directories to look for library files here.
 # Also add directories where the linker should search for
@@ -185,13 +182,13 @@ EXTRA_LIBDIRS =
 EXTRA_LIBS =
 
 # Path to Linker-Scripts
-LINKERSCRIPTPATH = $(LINKSCIPTDIR)
+LINKERSCRIPTPATH = $(SCRIPTDIR)
 
 # Optimization level, can be [0, 1, 2, 3, s]. 
 # 0 = turn off optimization. s = optimize for size.
 # (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
+#OPT = s
 OPT = s
-#OPT = 2
 #OPT = 3
 #OPT = 0
 
@@ -207,11 +204,13 @@ DEBUG = dwarf-2
 
 # Place project-specific -D (define) and/or 
 # -U options for C here.
-CDEFS = -DSTM32F10X_MD
+CDEFS = -D$(CLASS)
+#CDEFS += -DFREERTOS
 CDEFS += -DRAMSIZE=$(RAMSIZE)
 CDEFS += -DHSE_VALUE=$(F_XTAL)UL
 CDEFS += -D$(SYSCLOCK_CL)
 CDEFS += -DUSE_STDPERIPH_DRIVER
+#CDEFS += -DUSE_$(BOARD)
 #CDEFS += -DSTM32_SD_USE_DMA
 CDEFS += -DSTARTUP_DELAY
 # enable modifications in STM's libraries
@@ -241,6 +240,7 @@ endif
 
 #CDEFS += -D$(RUN_MODE) -D$(CHIP)
 CDEFS += -D$(RUN_MODE)
+#CFEFS += -DCO_ENABLE_LSS=1
 ADEFS += -D$(RUN_MODE) -D$(CHIP)
 
 THUMB    = -mthumb
@@ -257,7 +257,7 @@ THUMB    = -mthumb
 # Flags for C and C++ (arm-elf-gcc/arm-elf-g++)
 CFLAGS =  -g$(DEBUG)
 CFLAGS += -O$(OPT)
-CFLAGS += -mcpu=$(MCU) $(THUMB_IW) -msoft-float 
+CFLAGS += -mcpu=$(MCU) $(THUMB_IW)
 CFLAGS += $(CDEFS)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 # when using ".ramfunc"s without longcall:
@@ -307,9 +307,9 @@ LDFLAGS = -nostartfiles -Wl,-Map=$(OUTDIR)/$(TARGET).map,--cref,--gc-sections
 LDFLAGS += $(patsubst %,-L%,$(EXTRA_LIBDIRS))
 LDFLAGS += -lc
 LDFLAGS += $(patsubst %,-l%,$(EXTRA_LIBS))
-LDFLAGS += $(MATH_LIB)
+#LDFLAGS += $(MATH_LIB)
 LDFLAGS += $(CPLUSPLUS_LIB)
-LDFLAGS += -lc -lgcc 
+#LDFLAGS += -lc -lgcc 
 
 # Set linker-script name depending on selected run-mode and submodel name
 ifeq ($(RUN_MODE),RAM_RUN)

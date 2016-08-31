@@ -1,3 +1,5 @@
+# Hey Emacs, this is a -*- makefile -*-
+#
 # WinARM template makefile 
 # by Martin Thomas, Kaiserslautern, Germany 
 # <eversmith(at)heizung-thomas(dot)de>
@@ -16,14 +18,22 @@
 # MD:
 # - removed unused stuff to simplify maintnance 
 
-# TCHAIN_PREFIX = arm-softfloat-elf-
 TCHAIN_PREFIX = arm-none-eabi-
+REMOVE_CMD=rm
+
+FLASH_TOOL = OPENOCD
+
+
+# YES enables -mthumb option to flags for source-files listed 
+# in SRC and CPPSRC and -mthumb-interwork option for all source
+USE_THUMB_MODE = YES
+#USE_THUMB_MODE = NO
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
 # - SUBMDL used for linker-script name (-T) and passed as define
 MCU      = cortex-m3
-CHIP     = STM32F103T6U6
+CHIP     = STM32F103C8
 F_XTAL   = 8000000
 RAMSIZE  = 0x2800
 SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
@@ -47,7 +57,7 @@ VECTOR_TABLE_LOCATION=VECT_TAB_FLASH
 OUTDIR = $(RUN_MODE)
 
 # Target file name (without extension).
-TARGET = stm32_serial
+TARGET = gprs_module
 
 # Pathes to libraries
 APPLIBDIR = ../library
@@ -79,63 +89,7 @@ LINKSCIPTDIR = linkscript
 # use file-extension c for "c-only"-files
 
 ## Application:
-SRC = main.c $(SRCDIR)/hw_config.c $(SRCDIR)/usb_desc.c $(SRCDIR)/usb_istr.c $(SRCDIR)/usb_prop.c $(SRCDIR)/usb_pwr.c
-SRC += $(SRCDIR)/dfu_mal.c $(SRCDIR)/flash_if.c
-
-
-## compiler-specific sources
-SRC += $(APPLIBDIR)/gcc/startup_stm32f10x_ld.c
-SRC += $(APPLIBDIR)/gcc/fault_handlers.c
-
-## CMSIS for STM32
-SRC += $(CMSISDIR)/core_cm3.c
-SRC += $(CMSISDIR)/system_stm32f10x.c
-
-## used parts of the STM-Library
-#SRC += $(STMSPDSRCDIR)/stm32f10x_usart.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_flash.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_gpio.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_rcc.c
-SRC += $(STMSPDSRCDIR)/stm32f10x_spi.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_rtc.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_bkp.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_pwr.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_tim.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_dma.c
-#SRC += $(STMSPDSRCDIR)/stm32f10x_adc.c
-SRC += $(STMSPDSRCDIR)/misc.c
-
-# FreeRTOS-specific stuff
-#SRC += $(RTOSSRCDIR)/croutine.c
-#SRC += $(RTOSSRCDIR)/list.c
-#SRC += $(RTOSSRCDIR)/queue.c
-#SRC += $(RTOSSRCDIR)/tasks.c
-#SRC += $(RTOSPORTSRCDIR)/port.c
-#SRC += $(RTOSMEMSRCDIR)/heap_2.c
-#SRC += $(RTOSMEMSRCDIR)/alloc.c
-
-# mems testing
-#SRC += $(MEMSDIR)/mems_math.c
-#SRC += $(MEMSDIR)/mems_quaternion.c
-#SRC += $(MEMSDIR)/mems_vector.c
-#SRC += $(MEMSDIR)/mems_matrix.c
-#SRC += $(MEMSDIR)/mems_accel.c
-#SRC += $(MEMSDIR)/mems_gyro.c
-#SRC += $(MEMSDIR)/mems_norm.c
-#SRC += $(MEMSDIR)/mems_pos.c
-#SRC += $(MEMSDIR)/mems_kalman.c
-
-## EEprom Emulation AppNote Code
-#SRC += $(STMEEEMULSRCDIR)/eeprom.c
-
-# usb 
-SRC += $(STMUSBSRCDIR)/usb_sil.c
-SRC += $(STMUSBSRCDIR)/usb_init.c
-SRC += $(STMUSBSRCDIR)/usb_int.c
-SRC += $(STMUSBSRCDIR)/usb_mem.c
-SRC += $(STMUSBSRCDIR)/usb_core.c
-SRC += $(STMUSBSRCDIR)/usb_regs.c
-
+SRC = main.c 
 
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
@@ -207,7 +161,7 @@ DEBUG = dwarf-2
 
 # Place project-specific -D (define) and/or 
 # -U options for C here.
-CDEFS = -DSTM32F10X_MD
+CDEFS = -DSTM32F10X_LD
 CDEFS += -DRAMSIZE=$(RAMSIZE)
 CDEFS += -DHSE_VALUE=$(F_XTAL)UL
 CDEFS += -D$(SYSCLOCK_CL)
@@ -243,10 +197,17 @@ endif
 CDEFS += -D$(RUN_MODE)
 ADEFS += -D$(RUN_MODE) -D$(CHIP)
 
-THUMB    = -mthumb
-
 
 # Compiler flags.
+
+ifeq ($(USE_THUMB_MODE),YES)
+THUMB    = -mthumb
+### no for CM3 THUMB_IW = -mthumb-interwork
+else 
+THUMB    = 
+THUMB_IW = 
+endif
+
 #  -g*:          generate debugging information
 #  -O*:          optimization level
 #  -f...:        tuning, see GCC manual and avr-libc documentation
@@ -328,6 +289,9 @@ OBJCOPY = $(TCHAIN_PREFIX)objcopy
 OBJDUMP = $(TCHAIN_PREFIX)objdump
 SIZE    = $(TCHAIN_PREFIX)size
 NM      = $(TCHAIN_PREFIX)nm
+REMOVE  = $(REMOVE_CMD) -f
+
+
 
 # Define Messages
 # English
@@ -524,19 +488,19 @@ clean: begin clean_list finished end
 clean_list :
 ##	@echo
 	@echo $(MSG_CLEANING)
-	rm -f $(OUTDIR)/$(TARGET).map
-	rm -f $(OUTDIR)/$(TARGET).elf
-	rm -f $(OUTDIR)/$(TARGET).hex
-	rm -f $(OUTDIR)/$(TARGET).bin
-	rm -f $(OUTDIR)/$(TARGET).sym
-	rm -f $(OUTDIR)/$(TARGET).lss
-	rm -f $(ALLOBJ)
-	rm -f $(LSTFILES)
-	rm -f $(DEPFILES)
-	rm -f $(SRC:.c=.s)
-	rm -f $(SRCARM:.c=.s)
-	rm -f $(CPPSRC:.cpp=.s)
-	rm -f $(CPPSRCARM:.cpp=.s)
+	$(REMOVE) $(OUTDIR)/$(TARGET).map
+	$(REMOVE) $(OUTDIR)/$(TARGET).elf
+	$(REMOVE) $(OUTDIR)/$(TARGET).hex
+	$(REMOVE) $(OUTDIR)/$(TARGET).bin
+	$(REMOVE) $(OUTDIR)/$(TARGET).sym
+	$(REMOVE) $(OUTDIR)/$(TARGET).lss
+	$(REMOVE) $(ALLOBJ)
+	$(REMOVE) $(LSTFILES)
+	$(REMOVE) $(DEPFILES)
+	$(REMOVE) $(SRC:.c=.s)
+	$(REMOVE) $(SRCARM:.c=.s)
+	$(REMOVE) $(CPPSRC:.cpp=.s)
+	$(REMOVE) $(CPPSRCARM:.cpp=.s)
 
 
 # Create output files directory

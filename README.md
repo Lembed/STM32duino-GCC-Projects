@@ -1,2 +1,1 @@
-# Cortex-M3-Projects
-stm32duino gcc projects
+## stm32duino gcc projects

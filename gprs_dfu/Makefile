@@ -1,3 +1,5 @@
+# Hey Emacs, this is a -*- makefile -*-
+#
 # WinARM template makefile 
 # by Martin Thomas, Kaiserslautern, Germany 
 # <eversmith(at)heizung-thomas(dot)de>
@@ -16,14 +18,23 @@
 # MD:
 # - removed unused stuff to simplify maintnance 
 
-# TCHAIN_PREFIX = arm-softfloat-elf-
 TCHAIN_PREFIX = arm-none-eabi-
+REMOVE_CMD=rm
+
+FLASH_TOOL = OPENOCD
+
+
+# YES enables -mthumb option to flags for source-files listed 
+# in SRC and CPPSRC and -mthumb-interwork option for all source
+USE_THUMB_MODE = YES
+#USE_THUMB_MODE = NO
 
 # MCU name, submodel and board
 # - MCU used for compiler-option (-mcpu)
 # - SUBMDL used for linker-script name (-T) and passed as define
 MCU      = cortex-m3
-CHIP     = STM32F103T6U6
+CHIP     = STM32F103C8
+CLASS    = STM32F10X_LD
 F_XTAL   = 8000000
 RAMSIZE  = 0x2800
 SYSCLOCK_CL = SYSCLK_FREQ_72MHz=72000000
@@ -47,7 +58,7 @@ VECTOR_TABLE_LOCATION=VECT_TAB_FLASH
 OUTDIR = $(RUN_MODE)
 
 # Target file name (without extension).
-TARGET = stm32_serial
+TARGET = gprs_dfu
 
 # Pathes to libraries
 APPLIBDIR = ../library
@@ -70,17 +81,14 @@ MEMSDIR = $(APPLIBDIR)/MEMS
 STMEEEMULDIR = $(APPLIBDIR)/EEPROMEmulation_AN
 STMEEEMULSRCDIR = $(STMEEEMULDIR)/source
 STMEEEMULINCDIR = $(STMEEEMULDIR)/include
-SRCDIR = src
-INCLUDEDIR = inc
-SCRIPTDIR = scripts
-LINKSCIPTDIR = linkscript
 
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 
 ## Application:
-SRC = main.c $(SRCDIR)/hw_config.c $(SRCDIR)/usb_desc.c $(SRCDIR)/usb_istr.c $(SRCDIR)/usb_prop.c $(SRCDIR)/usb_pwr.c
-SRC += $(SRCDIR)/dfu_mal.c $(SRCDIR)/flash_if.c
+SRC = main.c hw_config.c
+SRC += usb_desc.c usb_istr.c usb_prop.c usb_pwr.c
+#SRC += flash_if.c
 
 
 ## compiler-specific sources
@@ -207,12 +215,12 @@ DEBUG = dwarf-2
 
 # Place project-specific -D (define) and/or 
 # -U options for C here.
-CDEFS = -DSTM32F10X_MD
+CDEFS = -DSTM32F10X_LD
 CDEFS += -DRAMSIZE=$(RAMSIZE)
 CDEFS += -DHSE_VALUE=$(F_XTAL)UL
 CDEFS += -D$(SYSCLOCK_CL)
 CDEFS += -DUSE_STDPERIPH_DRIVER
-#CDEFS += -DSTM32_SD_USE_DMA
+CDEFS += -DBOOTLOADER
 CDEFS += -DSTARTUP_DELAY
 # enable modifications in STM's libraries
 CDEFS += -DMOD_MTHOMAS_STMLIB
@@ -243,10 +251,17 @@ endif
 CDEFS += -D$(RUN_MODE)
 ADEFS += -D$(RUN_MODE) -D$(CHIP)
 
-THUMB    = -mthumb
-
 
 # Compiler flags.
+
+ifeq ($(USE_THUMB_MODE),YES)
+THUMB    = -mthumb
+### no for CM3 THUMB_IW = -mthumb-interwork
+else 
+THUMB    = 
+THUMB_IW = 
+endif
+
 #  -g*:          generate debugging information
 #  -O*:          optimization level
 #  -f...:        tuning, see GCC manual and avr-libc documentation
@@ -315,7 +330,6 @@ LDFLAGS += -lc -lgcc
 ifeq ($(RUN_MODE),RAM_RUN)
 LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_ram.ld
 else 
-#LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_freertos_flash.ld
 LDFLAGS +=-T$(LINKERSCRIPTPATH)/$(CHIP)_flash.ld
 endif
 
@@ -328,6 +342,9 @@ OBJCOPY = $(TCHAIN_PREFIX)objcopy
 OBJDUMP = $(TCHAIN_PREFIX)objdump
 SIZE    = $(TCHAIN_PREFIX)size
 NM      = $(TCHAIN_PREFIX)nm
+REMOVE  = $(REMOVE_CMD) -f
+
+
 
 # Define Messages
 # English
@@ -524,19 +541,19 @@ clean: begin clean_list finished end
 clean_list :
 ##	@echo
 	@echo $(MSG_CLEANING)
-	rm -f $(OUTDIR)/$(TARGET).map
-	rm -f $(OUTDIR)/$(TARGET).elf
-	rm -f $(OUTDIR)/$(TARGET).hex
-	rm -f $(OUTDIR)/$(TARGET).bin
-	rm -f $(OUTDIR)/$(TARGET).sym
-	rm -f $(OUTDIR)/$(TARGET).lss
-	rm -f $(ALLOBJ)
-	rm -f $(LSTFILES)
-	rm -f $(DEPFILES)
-	rm -f $(SRC:.c=.s)
-	rm -f $(SRCARM:.c=.s)
-	rm -f $(CPPSRC:.cpp=.s)
-	rm -f $(CPPSRCARM:.cpp=.s)
+	$(REMOVE) $(OUTDIR)/$(TARGET).map
+	$(REMOVE) $(OUTDIR)/$(TARGET).elf
+	$(REMOVE) $(OUTDIR)/$(TARGET).hex
+	$(REMOVE) $(OUTDIR)/$(TARGET).bin
+	$(REMOVE) $(OUTDIR)/$(TARGET).sym
+	$(REMOVE) $(OUTDIR)/$(TARGET).lss
+	$(REMOVE) $(ALLOBJ)
+	$(REMOVE) $(LSTFILES)
+	$(REMOVE) $(DEPFILES)
+	$(REMOVE) $(SRC:.c=.s)
+	$(REMOVE) $(SRCARM:.c=.s)
+	$(REMOVE) $(CPPSRC:.cpp=.s)
+	$(REMOVE) $(CPPSRCARM:.cpp=.s)
 
 
 # Create output files directory
