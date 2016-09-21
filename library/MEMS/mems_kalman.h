@@ -16,7 +16,7 @@ struct kalman_t {
 };
 
 void kalman_init(struct kalman_t*, frac Q, frac R);
-frac kalman_process(struct kalman_t *kf, frac z); 
+frac kalman_process(struct kalman_t *kf, frac z);
 
 #endif
 

@@ -45,7 +45,7 @@ void Mdm_ProcessCmd(uint8_t *buf, uint16_t len)
 	// check ID
 	if (memcmp(&Mdm_Cfg.ID, buf, 2) != 0) {
 		// not us.
-		return; 
+		return;
 	}
 
 	if ((len > 3) && (buf[2] > 1)) {
@@ -53,34 +53,34 @@ void Mdm_ProcessCmd(uint8_t *buf, uint16_t len)
 		cmd_data = &buf[4];
 
 		switch (buf[3]) {
-			case 'e': // erase
-				if ((cmd_len == 4) && (memcmp(&Mdm_Cfg.EraseMagic, cmd_data, 4) == 0)) {
-					//Spiflasherasechip
-				}
-				break;
-			case 'c': // configure
-				if (cmd_len == sizeof(struct mdm_cfg_t)) {
-					//FLSH_UpdateStorage(buf, sizeof(struct mdm_cfg_t));
-				}
-				break;
-			case 'r': // reboot
-				// send reply ? 
-				NVIC_SystemReset();
-				break;
-			case 'd': // download data
-				if (cmd_len == 3) {
-					// spiflashreadbuffer( addr, count) 
-				}
-				break;
-			case 'w': // get record count
-				if (cmd_len == 0) {
-					// return record count
-				}
-				break;
-			case 's': // poll state
-				if (cmd_len == 0) {
-					// return state
-				}
+		case 'e': // erase
+			if ((cmd_len == 4) && (memcmp(&Mdm_Cfg.EraseMagic, cmd_data, 4) == 0)) {
+				//Spiflasherasechip
+			}
+			break;
+		case 'c': // configure
+			if (cmd_len == sizeof(struct mdm_cfg_t)) {
+				//FLSH_UpdateStorage(buf, sizeof(struct mdm_cfg_t));
+			}
+			break;
+		case 'r': // reboot
+			// send reply ?
+			NVIC_SystemReset();
+			break;
+		case 'd': // download data
+			if (cmd_len == 3) {
+				// spiflashreadbuffer( addr, count)
+			}
+			break;
+		case 'w': // get record count
+			if (cmd_len == 0) {
+				// return record count
+			}
+			break;
+		case 's': // poll state
+			if (cmd_len == 0) {
+				// return state
+			}
 		}
 
 	}
@@ -120,7 +120,7 @@ void Mdm_Worker()
 
 void Mdm_RfmTxDoneCb()
 {
-	timer = Mdm_RXTimeout; 	
+	timer = Mdm_RXTimeout;
 
 	LED_RED(LED_OFF);
 	LED_GREEN(LED_ON);
@@ -144,7 +144,7 @@ void Mdm_AnalyzerStart(uint16_t s, uint16_t e, uint16_t d)
 	}
 
 	a_delta = d;
-	
+
 	// set lowest possible frequency
 	RFM_SetFreq(a_freq);
 

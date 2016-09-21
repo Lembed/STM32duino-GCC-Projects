@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * MD: Timer scheduling was modified to support periodic calling from
  * Systick handler on STM32.
  *
- * getElapsedTime semantic was changed to return timer period, instead of 
+ * getElapsedTime semantic was changed to return timer period, instead of
  * difference between consequent calls.
  */
 
@@ -69,11 +69,10 @@ TIMER_HANDLE SetAlarm(CO_Data* d, UNS32 id, TimerCallback_t callback, TIMEVAL va
 	s_timer_entry *row;
 
 	/* in order to decide new timer setting we have to run over all timer rows */
-	for(row_number=0, row=timers; row_number <= last_timer_raw + 1 && row_number < MAX_NB_TIMER; row_number++, row++)
-	{
+	for (row_number = 0, row = timers; row_number <= last_timer_raw + 1 && row_number < MAX_NB_TIMER; row_number++, row++) {
 		if (callback && 	/* if something to store */
-		   row->state == TIMER_FREE) /* and empty row */
-		{	/* just store */
+		    row->state == TIMER_FREE) { /* and empty row */
+			/* just store */
 			TIMEVAL real_timer_value;
 			TIMEVAL elapsed_time;
 
@@ -84,13 +83,13 @@ TIMER_HANDLE SetAlarm(CO_Data* d, UNS32 id, TimerCallback_t callback, TIMEVAL va
 			real_timer_value = value;
 			real_timer_value = min_val(real_timer_value, TIMEVAL_MAX);
 
-/* MD: no need to reschedule system timer
-			if (total_sleep_time > elapsed_time && total_sleep_time - elapsed_time > real_timer_value)
-			{
-				total_sleep_time = elapsed_time + real_timer_value;
-				setTimer(real_timer_value);
-			}
-*/
+			/* MD: no need to reschedule system timer
+						if (total_sleep_time > elapsed_time && total_sleep_time - elapsed_time > real_timer_value)
+						{
+							total_sleep_time = elapsed_time + real_timer_value;
+							setTimer(real_timer_value);
+						}
+			*/
 			row->callback = callback;
 			row->d = d;
 			row->id = id;
@@ -115,9 +114,8 @@ TIMER_HANDLE DelAlarm(TIMER_HANDLE handle)
 {
 	/* Quick and dirty. system timer will continue to be trigged, but no action will be preformed. */
 	MSG_WAR(0x3320, "DelAlarm. handle = ", handle);
-	if(handle != TIMER_NONE)
-	{
-		if(handle == last_timer_raw)
+	if (handle != TIMER_NONE) {
+		if (handle == last_timer_raw)
 			last_timer_raw--;
 		timers[handle].state = TIMER_FREE;
 	}
@@ -128,7 +126,7 @@ TIMER_HANDLE DelAlarm(TIMER_HANDLE handle)
 ** ------  TimeDispatch is called on each timer expiration ----
 **
 **/
-int tdcount=0;
+int tdcount = 0;
 void TimeDispatch(void)
 {
 	TIMER_HANDLE i;
@@ -137,25 +135,17 @@ void TimeDispatch(void)
 
 	s_timer_entry *row;
 
-	for(i=0, row = timers; i <= last_timer_raw; i++, row++)
-	{
-		if (row->state & TIMER_ARMED) /* if row is active */
-		{
-			if (row->val < period) /* to be trigged */
-			{
-				if (!row->interval) /* if simply outdated */
-				{
+	for (i = 0, row = timers; i <= last_timer_raw; i++, row++) {
+		if (row->state & TIMER_ARMED) { /* if row is active */
+			if (row->val < period) { /* to be trigged */
+				if (!row->interval) { /* if simply outdated */
 					row->state = TIMER_TRIG; /* ask for trig */
-				}
-				else /* or period have expired */
-				{
+				} else { /* or period have expired */
 					/* set val as interval, with overrun correction */
 					row->val = row->interval - (period % row->interval);
 					row->state = TIMER_TRIG_PERIOD; /* ask for trig, periodic */
 				}
-			}
-			else
-			{
+			} else {
 				/* Each armed timer value in decremented. */
 				row->val -= period;
 			}
@@ -163,12 +153,10 @@ void TimeDispatch(void)
 	}
 
 	/* Then trig them or not. */
-	for(i=0, row = timers; i<=last_timer_raw; i++, row++)
-	{
-		if (row->state & TIMER_TRIG)
-		{
+	for (i = 0, row = timers; i <= last_timer_raw; i++, row++) {
+		if (row->state & TIMER_TRIG) {
 			row->state &= ~TIMER_TRIG; /* reset trig state (will be free if not periodic) */
-			if(row->callback)
+			if (row->callback)
 				(*row->callback)(row->d, row->id); /* trig ! */
 		}
 	}

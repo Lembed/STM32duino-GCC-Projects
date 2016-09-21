@@ -56,7 +56,7 @@ UNS8 masterSendNMTstateChange(CO_Data* d, UNS8 Node_ID, UNS8 cs)
   m.data[0] = cs;
   m.data[1] = Node_ID;
 
-  return canSend(d->canHandle,&m);
+  return canSend(d->canHandle, &m);
 }
 
 
@@ -73,14 +73,14 @@ UNS8 masterSendNMTnodeguard(CO_Data* d, UNS8 nodeId)
   Message m;
 
   /* message configuration */
-  UNS16 tmp = nodeId | (NODE_GUARD << 7); 
+  UNS16 tmp = nodeId | (NODE_GUARD << 7);
   m.cob_id = UNS16_LE(tmp);
   m.rtr = REQUEST;
   m.len = 0;
 
   MSG_WAR(0x3503, "Send_NODE_GUARD to node : ", nodeId);
 
-  return canSend(d->canHandle,&m);
+  return canSend(d->canHandle, &m);
 }
 
 /*!
@@ -105,6 +105,6 @@ void masterRequestNodeState(CO_Data* d, UNS8 nodeId)
       d->NMTable[i] = Unknown_state;
     }
   }
-  masterSendNMTnodeguard(d,nodeId);
+  masterSendNMTnodeguard(d, nodeId);
 }
 

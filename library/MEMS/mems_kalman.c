@@ -7,7 +7,8 @@
  * @param Q process noise covariance
  * @param R measurement noise covariance
  */
-void kalman_init(struct kalman_t *kf, frac Q, frac R) {
+void kalman_init(struct kalman_t *kf, frac Q, frac R)
+{
 	kf->Xhat = mems_ZERO;
 	kf->P = mems_ZERO;
 
@@ -21,7 +22,8 @@ void kalman_init(struct kalman_t *kf, frac Q, frac R) {
  * @param kf initialized kalman_t structure
  * @param z measured value
  */
-frac kalman_process(struct kalman_t *kf, frac z) {
+frac kalman_process(struct kalman_t *kf, frac z)
+{
 	frac Xhat_last;
 	frac Plast;
 	frac K;
@@ -32,7 +34,7 @@ frac kalman_process(struct kalman_t *kf, frac z) {
 
 	/* UPDATE */
 	/* calculate Kalman gain */
-	K = mems_div(Plast, mems_add(Plast, kf->R)); 
+	K = mems_div(Plast, mems_add(Plast, kf->R));
 
 
 	/* calculate inovation vector */

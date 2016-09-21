@@ -26,12 +26,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "timer.h"
 
 // Define the timer registers
-#define AT91C_BASE_TC	AT91C_BASE_TC2
-#define AT91C_ID_TC	AT91C_ID_TC2
+#define AT91C_BASE_TC AT91C_BASE_TC2
+#define AT91C_ID_TC AT91C_ID_TC2
 #define TimerAlarm      AT91C_BASE_TC2->TC_RC
 #define TimerCounter    AT91C_BASE_TC2->TC_CV
 
-#define TIMER_INTERRUPT_LEVEL		1
+#define TIMER_INTERRUPT_LEVEL   1
 
 void timer_can_irq_handler(void);
 
@@ -43,8 +43,8 @@ static TIMEVAL last_time_set = TIMEVAL_MAX;
 void initTimer(void)
 /******************************************************************************
 Initializes the timer, turn on the interrupt and put the interrupt time to zero
-INPUT	void
-OUTPUT	void
+INPUT void
+OUTPUT  void
 ******************************************************************************/
 {
   unsigned int dummy;
@@ -67,7 +67,7 @@ OUTPUT	void
 
   // Open Timer interrupt
   AT91F_AIC_ConfigureIt (AT91C_BASE_AIC, AT91C_ID_TC, TIMER_INTERRUPT_LEVEL,
-			 AT91C_AIC_SRCTYPE_INT_POSITIVE_EDGE, timer_can_irq_handler);
+                         AT91C_AIC_SRCTYPE_INT_POSITIVE_EDGE, timer_can_irq_handler);
 
   AT91C_BASE_TC->TC_IER = AT91C_TC_CPCS;  //  IRQ enable CPC
   AT91F_AIC_EnableIt (AT91C_BASE_AIC, AT91C_ID_TC2);
@@ -79,21 +79,21 @@ OUTPUT	void
 void setTimer(TIMEVAL value)
 /******************************************************************************
 Set the timer for the next alarm.
-INPUT	value TIMEVAL (unsigned long)
-OUTPUT	void
+INPUT value TIMEVAL (unsigned long)
+OUTPUT  void
 ******************************************************************************/
 {
-  TimerAlarm += value;	// Add the desired time to timer interrupt time
+  TimerAlarm += value;  // Add the desired time to timer interrupt time
 }
 
 TIMEVAL getElapsedTime(void)
 /******************************************************************************
 Return the elapsed time to tell the stack how much time is spent since last call.
-INPUT	void
-OUTPUT	value TIMEVAL (unsigned long) the elapsed time
+INPUT void
+OUTPUT  value TIMEVAL (unsigned long) the elapsed time
 ******************************************************************************/
 {
-  unsigned int timer = TimerCounter;	// Copy the value of the running timer
+  unsigned int timer = TimerCounter;  // Copy the value of the running timer
   // Calculate the time difference
   return timer > last_time_set ? timer - last_time_set : last_time_set - timer;
 }
@@ -114,6 +114,6 @@ void timer_can_irq_handler(void)
   // Suppress warning variable "dummy" was set but never used
   dummy = dummy;
   last_time_set = TimerCounter;
-  TimeDispatch();	// Call the time handler of the stack to adapt the elapsed time
+  TimeDispatch(); // Call the time handler of the stack to adapt the elapsed time
 }
 

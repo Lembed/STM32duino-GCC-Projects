@@ -21,12 +21,13 @@ struct position_t position;
 
 uint16_t mems_go = 0;
 
-static void taskMems(void *pvParameters) {
+static void taskMems(void *pvParameters)
+{
 	const portTickType xDelay = 100 / portTICK_RATE_MS;
 	struct accel_raw_t accel_raw;
 	struct gyro_raw_t gyro_raw;
 	uint8_t count;
-	
+
 	LisXXX_Init();
 	ADIS_Init();
 
@@ -37,7 +38,7 @@ static void taskMems(void *pvParameters) {
 			vTaskDelay(xDelay);
 
 
-			while((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5)) != Bit_SET);
+			while ((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5)) != Bit_SET);
 			// get accel samples
 			LisXXX_GetData(&accel_raw);
 
@@ -59,7 +60,7 @@ static void taskMems(void *pvParameters) {
 
 			// display every 5th measurement on display
 			if (count == 0) {
-				
+
 			}
 			count ++;
 			count %= 5;
@@ -67,7 +68,8 @@ static void taskMems(void *pvParameters) {
 	}
 }
 
-void Mems_Init() {
+void Mems_Init()
+{
 	xTaskCreate( taskMems, ( signed char * ) "MEMS", configMINIMAL_STACK_SIZE, NULL, INPUT_PRIORITY, NULL );
 }
 

@@ -131,8 +131,7 @@ void main(void)
 	RFM_RST(Bit_RESET);
 	RFM_RST(Bit_SET);
 
-//	RFM_Init();
-
+	//	RFM_Init();
 	UART_Init();
 	ADC_init();
 	Log_Init();
